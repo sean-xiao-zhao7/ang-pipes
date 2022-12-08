@@ -1,4 +1,6 @@
+import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
+import { start } from '../start';
 
 @Component({
   selector: 'app-root',
@@ -34,6 +36,13 @@ export class AppComponent {
   ];
   filter: string;
   newServerName: string;
+  appStatus: Promise<string> = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve('stable');
+    }, 2000);
+  });
+
+  constructor(private httpClient: HttpClient) {}
 
   getStatusClasses(server: {
     instanceType: string;
@@ -55,6 +64,9 @@ export class AppComponent {
       status: 'stable',
       started: new Date(),
     };
+    this.httpClient
+      .post(start.fb + '/servers.json', newServer)
+      .subscribe((res) => {});
     this.servers.push(newServer);
     this.newServerName = '';
   }
