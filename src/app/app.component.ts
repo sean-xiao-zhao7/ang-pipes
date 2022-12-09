@@ -1,39 +1,13 @@
-import { HttpClient } from '@angular/common/http';
-import { Component } from '@angular/core';
-import { start } from '../start';
+import { Component, OnInit } from '@angular/core';
+import { Server } from './models/server.interface';
+import { ServersService } from './services/servers.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
-export class AppComponent {
-  servers = [
-    {
-      instanceType: 'medium',
-      name: 'Production Server',
-      status: 'stable',
-      started: new Date(15, 1, 2017),
-    },
-    {
-      instanceType: 'large',
-      name: 'User Database',
-      status: 'stable',
-      started: new Date(15, 1, 2017),
-    },
-    {
-      instanceType: 'small',
-      name: 'Development Server',
-      status: 'offline',
-      started: new Date(15, 1, 2017),
-    },
-    {
-      instanceType: 'small',
-      name: 'Testing Environment Server',
-      status: 'stable',
-      started: new Date(15, 1, 2017),
-    },
-  ];
+export class AppComponent implements OnInit {
   filter: string;
   newServerName: string;
   appStatus: Promise<string> = new Promise((resolve, reject) => {
@@ -41,8 +15,15 @@ export class AppComponent {
       resolve('stable');
     }, 2000);
   });
+  servers: Server[] = [];
 
-  constructor(private httpClient: HttpClient) {}
+  constructor(private serversService: ServersService) {}
+
+  ngOnInit(): void {
+    this.serversService.getServersHTTP().subscribe((servers) => {
+      this.servers = servers;
+    });
+  }
 
   getStatusClasses(server: {
     instanceType: string;
@@ -58,15 +39,7 @@ export class AppComponent {
   }
 
   onAdd() {
-    const newServer = {
-      instanceType: 'small',
-      name: this.newServerName,
-      status: 'stable',
-      started: new Date(),
-    };
-    this.httpClient
-      .post(start.fb + '/servers.json', newServer)
-      .subscribe((res) => {});
+    const newServer = this.serversService.addServerHTTP(this.newServerName);
     this.servers.push(newServer);
     this.newServerName = '';
   }
